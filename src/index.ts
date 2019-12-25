@@ -66,6 +66,7 @@ interface Context {
  * Función de logueo.
  */
 interface LoggerFunction {
+    (...args: any[]): void;
     (message?: string, ...args: any[]): void;
     (context?: Context, message?: string, ...args: any[]): void;
 }
@@ -134,7 +135,7 @@ const DEFAULT_OPTIONS: LoggerBase = {
  * @param {string[]}            args        Argumentos de sustitución(si message es Context) el primer elemento se
  *                                          toma como mensaje. 
  */
-function write(this: LoggerInfo, message?: string | Context, ...args: any[]) {
+function write(this: LoggerInfo, message?: any | Context, ...args: any[]) {
     let prev = '';
     if (this.prompt) prev = this.prompt;
     if (this.date) prev += '[' + this.date() + ']';
@@ -143,12 +144,17 @@ function write(this: LoggerInfo, message?: string | Context, ...args: any[]) {
         if (message[$CONTEXT]) {
             const context = message as Context;
             message = args.shift() as string;
-            if (message) message = parse_context(context, message, this);
+            if (message) message = parse_message_in_context(context, message, this) + '\n';
+        } else if (typeof message !== 'string') {
+            args.unshift(message);
+            message = '';
+        } else {
+            message += '\n';
         }
     } else {
         message = '';
     }
-    this.writer.write(format(this, prev + message + '\n', ...args));
+    this.writer.write(format(this, prev + message, ...args));
 }
 
 /**
@@ -232,25 +238,21 @@ function parse_date(template) {
 }
 
 /**
- * 
- * @param {Context}         context     Objeto con la información a insertar. 
+ * Reemplaza los marcadores de posición del mensaje por sus correspondientes valores tras ejecutarlos en contexto.
+ * @param {Context}         context     Objeto 'contextualizado' con el ambito global para las expresiones. 
  * @param {string}          message     Mensaje con los marcadores de posición para insertar la información de context.
  * @param {InspectOptions}  options 
  */
-function parse_context(context: any, message: string, options?: InspectOptions) {
+function parse_message_in_context(context: any, message: string, options?: InspectOptions) {
     REX_PH.lastIndex = 0;
     return message.replace(REX_PH, (m: string) => {
         if (m === '%%') return '%';
-        return parse_key(context, m.substr(1, m.length - 2));
+        const val = runInContext('(' + m.substr(1, m.length - 2).replace('%%', '%') + ')', context)
+        return inspect(val, options);
     })
 }
 
 
-function parse_key(sandbox, expr) {
-
-    expr = '(' + expr.replace('%%', '%') + ')';
-    return runInContext(expr, sandbox);
-}
 
 
 
