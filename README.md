@@ -28,10 +28,11 @@ Permite la definición de nuevos loggers.
     registerLogger(defs: LoggerDefs);
 ```
 * `name`: Nombe que identificará el logger en la función-objeto `log`.
-* `options`: Opciones de configuración. LoggerOptions
-* `defs`: Objeto de definición del tipo id_logger:LoggerOptions. 
+* `options`: Opciones de configuración. `LoggerOptions`
+* `defs`: Objeto de definición del tipo id_logger:`LoggerOptions`. 
 
 ## `LoggerOptions`
+Opciones para la definición de un logger. Además de las mostradas se extiende con las propias de `util.InspectOptions` para definir como se mostrarán los datos.
 ```ts
     encoding?: string,                  // codificación salida.
     flags?: string                      // flags para el stream creado('a' append, 'w' create )
@@ -44,4 +45,52 @@ Permite la definición de nuevos loggers.
 Devuelve una copia superficial del objeto pasado marcada como contexto.
 ```ts
     let context= contextualize(obj);
+```
+
+## Ejemplo
+```ts
+import log, { registerLogger, contextualize } from '../index';
+
+//log viene predefinido pero se puede redefinir mediante registerLogger.
+log("Mensaje %d", 1);
+// Mensaje 1
+
+// Crea dos loggers mas.
+registerLogger({
+    'err': {
+        output: 'stderr', // Salida de error standar
+        prompt: 'Error'
+    },
+    'warn': {
+        output: 'logger.log', // Archivo de salida
+        prompt: "Warn",
+        date: 'DA-MO-YE',     // Formato para la fecha actual
+        depth: 0,             // ... optiones de util.inspect
+        compact: false,
+        colors: true
+    }
+});
+
+
+log.err("¡¡¡Al loro!!!");
+// Error: ¡¡¡Al loro!!!
+
+const data = {
+    name: 'Pedro',
+    age: 25,
+    info: {
+        casa: 1,
+        perro: 0
+    }
+}
+
+const context = contextualize(data);
+log.warn(context, "%name tiene %age años: %info y %d€", 25);
+// Warn[03-11-2019]:'Pedro' tiene 25 años: {
+//   casa: true,
+//   perro: false
+// } y 25€
+log.warn(context, "%name tiene %age años, casas: %info.casa, perros:%info.perro y %d€", 25);
+// Warn[03-11-2019]:'Pedro' tiene 25 años, casas: 1, perros:0 y 25€
+
 ```

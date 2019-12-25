@@ -1,16 +1,5 @@
 import log, { registerLogger, contextualize } from '../index';
 
-
-const data = {
-    a: 1,
-    b: 2,
-    c: {
-        c1: 31,
-        c2: 32
-    }
-}
-
-
 registerLogger({
     'err': {
         output: 'stderr',
@@ -26,18 +15,18 @@ registerLogger({
     }
 });
 
-const o = {
+const data = {
     name: 'Pedro',
     age: 25,
-    ob: {
-        a: 1,
-        b: 2,
-        c: 3
+    info: {
+        casa: 1,
+        perro: 0
     }
 }
 
-log("Logger principal");
 log.err("Logger de error")
-const ctx = contextualize(o);
-const msg = "%name tiene %age años: %ob %d";
-log.warn(ctx, msg, 25);
+const context = contextualize(data);
+const msg = "%name tiene %age años, casas: %info.casa, perros:%info.perro y %d€";
+log.warn(context, msg, 25);
+
+

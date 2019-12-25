@@ -98,7 +98,7 @@ const DATE_PLACEHOLDERS = {
 const REX_PROPS = /[A-Z][A-Z]+/g
 
 // Expresión para la extracción de marcadores de posición %<var>
-const REX_PH = /%%|%[A-Za-z_$][A-Za-z_$0-9]*/g
+const REX_PH = /%%|%[A-Za-z_$][A-Za-z_$0-9]*(\.[A-Za-z_$][A-Za-z_$0-9]*)*/g
 
 /**
  * Registro de Writables
@@ -238,7 +238,15 @@ function parse_context(context: Context, message: string, options: InspectOption
     return message.replace(REX_PH, (m: string) => {
         if (m === '%%') return '%';
         const key = m.substr(1);
-        if (context[key] !== undefined) return inspect(context[key], options);
+        const lev = key.split('.');
+        if (context[lev[0]] !== undefined) {
+            let val = context[lev[0]];
+            for (let i = 1; i < lev.length; i++) {
+                if (val[lev[i]] === undefined) break;
+                val = val[lev[i]];
+            }
+            return inspect(val, options);
+        }
         return m;
     })
 }
