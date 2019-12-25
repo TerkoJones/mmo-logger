@@ -1,0 +1,16 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "noImplicitAny": false,
+        "removeComments": true,
+        "noLib": false,
+        "preserveConstEnums": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "sourceMap": true,
+        "declaration": true,
+        "outDir": "build",
+        "rootDir": "src"
+    }
+}
