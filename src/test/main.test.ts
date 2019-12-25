@@ -26,7 +26,7 @@ const data = {
 
 log.err("Logger de error")
 const context = contextualize(data);
-const msg = "%name tiene %age años, casas: %info.casa, perros:%info.perro y %d€";
+const msg = "%name% tiene %age% años, casas: %info.casa%, perros:%info.perro% y %d€";
 log.warn(context, msg, 25);
 
 

@@ -16,7 +16,8 @@ Función de logeo principal cuyos miembros son los distintos loggers definidos. 
     log(context, message, ...args);
 ```
 * `message`: Mensaje a mostrar con los marcadores de posición tanto para los datos del contexto(si lo hay) como para el resto de argumentos.
-* `context`: Objeto creado mediante `contextualize` y cuya información se puede insertar en el mensaje mediante los marcadores de posición del tipo %key
+* `context`: Objeto creado mediante `contextualize` y cuya información se puede insertar en el mensaje mediante los marcadores de posición del tipo %expresion%,
+donde `expression` es la expresión a evaluar.(Usar %% para escapar %).
 * `args`: Argumentos extras para insertar en el mensaje mediante marcadores de posición tal y como lo hace `util.format`. 
 NOTA: Los nombres de sus métodos se corresponden exactamente con los dados en la creación de los mimos.
 

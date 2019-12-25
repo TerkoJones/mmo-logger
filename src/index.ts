@@ -3,12 +3,17 @@ import {
     InspectOptions,
     inspect
 } from 'util';
-import * as fs from 'fs';
-import * as path from 'path';
 import {
     Writable,
     WritableOptions
 } from 'stream'
+import {
+    createContext,
+    runInContext
+} from 'vm';
+
+import * as fs from 'fs';
+import * as path from 'path';
 
 type Dictionary<T> = {
     [key: string]: T
@@ -55,7 +60,6 @@ const $CONTEXT = Symbol('Context');
 interface Context {
     [$CONTEXT]: boolean,
     [key: string]: any,
-    [inx: number]: any
 }
 
 /**
@@ -98,7 +102,7 @@ const DATE_PLACEHOLDERS = {
 const REX_PROPS = /[A-Z][A-Z]+/g
 
 // Expresión para la extracción de marcadores de posición %<var>
-const REX_PH = /%%|%[A-Za-z_$][A-Za-z_$0-9]*(\.[A-Za-z_$][A-Za-z_$0-9]*)*/g
+const REX_PH = /%%|%([\s\u0021-\u0024\u0026-\u01ff]|%{2,})+%/g
 
 /**
  * Registro de Writables
@@ -233,22 +237,19 @@ function parse_date(template) {
  * @param {string}          message     Mensaje con los marcadores de posición para insertar la información de context.
  * @param {InspectOptions}  options 
  */
-function parse_context(context: Context, message: string, options: InspectOptions) {
+function parse_context(context: any, message: string, options?: InspectOptions) {
     REX_PH.lastIndex = 0;
     return message.replace(REX_PH, (m: string) => {
         if (m === '%%') return '%';
-        const key = m.substr(1);
-        const lev = key.split('.');
-        if (context[lev[0]] !== undefined) {
-            let val = context[lev[0]];
-            for (let i = 1; i < lev.length; i++) {
-                if (val[lev[i]] === undefined) break;
-                val = val[lev[i]];
-            }
-            return inspect(val, options);
-        }
-        return m;
+        return parse_key(context, m.substr(1, m.length - 2));
     })
+}
+
+
+function parse_key(sandbox, expr) {
+
+    expr = '(' + expr.replace('%%', '%') + ')';
+    return runInContext(expr, sandbox);
 }
 
 
@@ -275,7 +276,7 @@ export function registerLogger(name: string | LoggerDefs, options?: LoggerOption
  * Devuelve un objeto como el pasado marcado como contexto.
  */
 export function contextualize(obj: object): Context {
-    return Object.assign({
+    return <Context>createContext(Object.assign({
         [$CONTEXT]: true
-    }, obj);
+    }, obj));
 }
