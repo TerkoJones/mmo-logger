@@ -1,0 +1,2 @@
+# mmo-logger
+Logeador básico.
