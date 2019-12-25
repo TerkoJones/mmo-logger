@@ -25,6 +25,6 @@ const data = {
 }
 
 log.err("Micasa %d", 25)
-
+log.warn(data);
 
 

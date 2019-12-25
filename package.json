@@ -4,7 +4,9 @@
   "description": "",
   "main": "build/index.js",
   "typings": "build/index",
-  "dependencies": {},
+  "dependencies": {
+    "mmo-replace": "github:terkojones/mmo-replace"
+  },
   "devDependencies": {
     "@types/node": "^12.12.18"
   },

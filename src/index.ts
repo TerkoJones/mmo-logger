@@ -1,19 +1,16 @@
 import {
     formatWithOptions as format,
-    InspectOptions,
-    inspect
+    InspectOptions
 } from 'util';
 import {
     Writable,
     WritableOptions
 } from 'stream'
-import {
-    createContext,
-    runInContext
-} from 'vm';
+
 
 import * as fs from 'fs';
 import * as path from 'path';
+import * as replace from 'mmo-replace';
 
 type Dictionary<T> = {
     [key: string]: T
@@ -144,7 +141,7 @@ function write(this: LoggerInfo, message?: any | Context, ...args: any[]) {
         if (message[$CONTEXT]) {
             const context = message as Context;
             message = args.shift() as string;
-            if (message) message = parse_message_in_context(context, message, this) + '\n';
+            if (message) message = replace(context, message, this) + '\n';
         } else if (typeof message !== 'string') {
             args.unshift(message);
             message = '';
@@ -237,20 +234,20 @@ function parse_date(template) {
     }
 }
 
-/**
- * Reemplaza los marcadores de posición del mensaje por sus correspondientes valores tras ejecutarlos en contexto.
- * @param {Context}         context     Objeto 'contextualizado' con el ambito global para las expresiones. 
- * @param {string}          message     Mensaje con los marcadores de posición para insertar la información de context.
- * @param {InspectOptions}  options 
- */
-function parse_message_in_context(context: any, message: string, options?: InspectOptions) {
-    REX_PH.lastIndex = 0;
-    return message.replace(REX_PH, (m: string) => {
-        if (m === '%%') return '%';
-        const val = runInContext('(' + m.substr(1, m.length - 2).replace('%%', '%') + ')', context)
-        return inspect(val, options);
-    })
-}
+// /**
+//  * Reemplaza los marcadores de posición del mensaje por sus correspondientes valores tras ejecutarlos en contexto.
+//  * @param {Context}         context     Objeto 'contextualizado' con el ambito global para las expresiones. 
+//  * @param {string}          message     Mensaje con los marcadores de posición para insertar la información de context.
+//  * @param {InspectOptions}  options 
+//  */
+// function parse_message_in_context(context: any, message: string, options?: InspectOptions) {
+//     REX_PH.lastIndex = 0;
+//     return message.replace(REX_PH, (m: string) => {
+//         if (m === '%%') return '%';
+//         const val = runInContext('(' + m.substr(1, m.length - 2).replace('%%', '%') + ')', context)
+//         return inspect(val, options);
+//     })
+// }
 
 
 
@@ -278,7 +275,7 @@ export function registerLogger(name: string | LoggerDefs, options?: LoggerOption
  * Devuelve un objeto como el pasado marcado como contexto.
  */
 export function contextualize(obj: object): Context {
-    return <Context>createContext(Object.assign({
+    return Object.assign({
         [$CONTEXT]: true
-    }, obj));
+    }, obj);
 }
